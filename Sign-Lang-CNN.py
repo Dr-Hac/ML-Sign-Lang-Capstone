@@ -2,7 +2,8 @@
 NAME: Sign-Lang-CNN.py
 DESCRIPTION: CNN algorithm to classify sign language for our capstone
 PROGRAMMER: Caidan Gray
-DATE: 3/3/2025
+CREATION DATE: 3/3/2025
+LAST EDITED: 4/3/2025   (please update each time the script is changed)
 """
 
 import torch
@@ -23,6 +24,9 @@ start_time = time.time()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 
+# data loader
+Data_Loader = data_loader.Data_Loader()
+
 # hyper-parameters
 num_epochs = 10
 batch_size = 4
@@ -32,9 +36,9 @@ learning_rate = 0.001
 # transform to tensors of normalized range [-1, 1]
 transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-train_dataset =
+train_dataset = Data_Loader.train_loader()
 
-test_dataset =
+test_dataset =  Data_Loader.test_loader()
 
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
