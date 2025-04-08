@@ -9,6 +9,8 @@ LAST EDITED: 4/8/2025   (please update each time the script is changed)
 import os
 import sys
 import mysql.connector
+from numpy.f2py.auxfuncs import throw_error
+
 
 class Import_Data():
     def __init__(self, training_host: str, training_user: str, training_password: str, testing_host: str, testing_user: str, testing_password: str):
@@ -49,4 +51,17 @@ class Import_Data():
 
     def generate_labels(self):
         """this function generates a labels.txt based off of the data to be used by the model"""
-        file = open('Data/labels.txt', 'w')
+        # check if labels.txt exists
+        if not os.path.isfile('labels.txt'):
+            print('creating labels.txt')
+            # create label.txt if its not there
+            file = open('labels.txt', 'x')
+            file.close()
+        else:
+            print("labels.txt already exists")
+
+        # write the list of labels to labels.txt (needs too be done)
+        file = open('labels.txt', 'w')
+
+        file.close()
+
