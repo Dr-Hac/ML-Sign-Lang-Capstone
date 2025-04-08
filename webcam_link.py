@@ -45,6 +45,7 @@ class Webcam_Link():
         """return the current frame from the webcam"""
         return self.vc.read()
 
-
-cam = Webcam_Link(0)
+"""
 cam.attempt_webcam_start()
+cam = Webcam_Link(0)
+"""

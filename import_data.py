@@ -3,10 +3,11 @@ NAME: import_data.py
 DESCRIPTION: download data from the mysql database to be run through the dataloader
 PROGRAMMER: Caidan Gray
 CREATION DATE: 4/3/2025
-LAST EDITED: 4/3/2025   (please update each time the script is changed)
+LAST EDITED: 4/8/2025   (please update each time the script is changed)
 """
 
 import os
+import sys
 import mysql.connector
 
 class Import_Data():
@@ -45,3 +46,7 @@ class Import_Data():
         directory = open('Data/Testing_Data', 'a')
         directory.write(test_data) # fix input type
         return test_data
+
+    def generate_labels(self):
+        """this function generates a labels.txt based off of the data to be used by the model"""
+        file = open('Data/labels.txt', 'w')
