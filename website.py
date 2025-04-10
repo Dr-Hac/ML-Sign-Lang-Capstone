@@ -3,7 +3,7 @@ NAME: website.py
 DESCRIPTION: create and run the webcam on a website at the localhost/5000 address
 PROGRAMMER: Caidan Gray
 CREATION DATE: 4/7/2025
-LAST EDITED: 4/8/2025   (please update each time the script is changed)
+LAST EDITED: 4/10/2025   (please update each time the script is changed)
 """
 
 import os
@@ -35,7 +35,7 @@ def on_close():
 def home():
     frame = webcam.get_frame()
     print(frame)
-    return render_template('HTML.html', zero=0, url=frame, frame=frame)
+    return render_template('HTML.html', url=url_for('static', filename=frame), frame=frame)
 
 
 if __name__ == '__main__':
