@@ -7,7 +7,8 @@ LAST EDITED: 4/10/2025   (please update each time the script is changed)
 """
 
 import os
-from flask import Flask, send_from_directory, url_for, render_template, request, redirect
+from flask import Flask, send_from_directory, url_for, render_template, request, redirect, jsonify
+from flask_socketio import SocketIO
 from flask_uploads import UploadSet, IMAGES, configure_uploads
 from flask_wtf import FlaskForm
 from werkzeug.utils import secure_filename
@@ -19,6 +20,7 @@ import webcam_link
 # set app configs
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'key'
+socket = SocketIO(app)
 
 webcam = webcam_link.Webcam_Link(0)
 
@@ -37,6 +39,10 @@ def home():
     print(frame)
     return render_template('HTML.html', url=url_for('static', filename=frame), frame=frame)
 
+@app.route('/get_img')
+def get_img():
+    frame = webcam.get_frame()
+    return jsonify({'value': url_for('static', filename=frame)})
 
 if __name__ == '__main__':
     # register the on_close() function with the flask app

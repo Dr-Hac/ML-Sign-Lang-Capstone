@@ -45,12 +45,23 @@ LAST EDITED: 4/8/2025   (please update each time the script is changed)
     </header>
 
     <main>
-        <h1>{{ frame }}</h1>
-        <img src="{{ url }}" alt="err">
+        <img src="" alt="err" id="img_frame">
     </main>
 
     <footer>
         <p>&copy; 2025 Caidan Gray, Matteo Leonard</p>
     </footer>
+<script>
+            function getValue() {
+                fetch('/get_img')
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('img_frame').src = data.value;
+                        fetch(data.value, {cache: 'reload', mode: 'no-cors'})
+                    });
+            }
+            // Update value 30 times a second
+            setInterval(getValue, 33.3);
+        </script>
 </body>
 </html>

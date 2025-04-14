@@ -17,7 +17,8 @@ import numpy as np
 import time
 import sklearn
 import data_loader
-import webcam_link
+import cv2
+import PIL
 
 # device config
 # sets it to run on gpu if supported
@@ -26,23 +27,37 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 
 # data loader
-Data_Loader = data_loader.Data_Loader()
+#Data_Loader = data_loader.Data_Loader()
 
-# webcam link
-webcam_link = webcam_link.Webcam_Link(0)
+
 
 # hyper-parameters
-num_epochs = 10
+num_epochs = 1
 batch_size = 4
 learning_rate = 0.001
+
+data_transforms = torchvision.transforms.Compose([
+    torchvision.transforms.Resize(size=(224, 224)),
+    torchvision.transforms.RandomHorizontalFlip(),
+    torchvision.transforms.ToTensor(),
+    torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
 
 # dataset of PILImage images of range [0, 1]
 # transform to tensors of normalized range [-1, 1]
 transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-
+"""
 train_dataset = Data_Loader.train_loader()
 
 test_dataset =  Data_Loader.test_loader()
+
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+
+test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+"""
+
+train_dataset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+
+test_dataset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
 
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
@@ -131,4 +146,55 @@ with torch.no_grad():
         acc = 100.0 * (n_class_correct[i] / n_class_samples[i])
         print(f"accuracy of {classes[i]}: {acc:.4f}%")
 
+def preprocess(image):
+    image = PIL.Image.fromarray(image) #Webcam frames are numpy array format
+                                       #Therefore transform back to PIL image
+    print(image)
+    image = data_transforms(image)
+    image = image.float()
+    #image = Variable(image, requires_autograd=True)
+    #image = image.cuda()
+    image = image.unsqueeze(0) #I don't know for sure but Resnet-50 model seems to only
+                               #accpets 4-D Vector Tensor so we need to squeeze another
+    return image                            #dimension out of our 3-D vector Tensor
+
+def __draw_label(img, text, pos, bg_color):
+   font_face = cv2.FONT_HERSHEY_SIMPLEX
+   scale = 0.4
+   color = (0, 0, 0)
+   thickness = cv2.FILLED
+   margin = 2
+   txt_size = cv2.getTextSize(text, font_face, scale, thickness)
+
+   end_x = pos[0] + txt_size[0][0] + margin
+   end_y = pos[1] - txt_size[0][1] - margin
+
+   cv2.rectangle(img, pos, (end_x, end_y), bg_color, thickness)
+   cv2.putText(img, text, pos, font_face, scale, color, 1, cv2.LINE_AA)
+
 print(f"total time: {time.time()-start_time}")
+
+torch.save(model, 'model.pth')
+
+cv2.namedWindow('image', cv2.WINDOW_NORMAL)
+cam = cv2.VideoCapture(0)
+fps = 0
+show_score = 0
+show_res = 'Nothing'
+sequence = 0
+
+while True:
+    ret, frame = cam.read()  # Capture each frame
+
+    #img = preprocess(frame)
+    __draw_label(frame, 'Hello World', (20,20), (255,0,0))
+
+    cv2.imshow('frame', frame)
+    if cv2.waitKey(1) == 27:
+        cv2.destroyWindow('frame')
+        cam.release()
+
+
+
+
+
