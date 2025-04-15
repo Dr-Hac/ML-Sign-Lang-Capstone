@@ -9,6 +9,7 @@ LAST EDITED: 4/4/2025   (please update each time the script is changed)
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import Variable
 from torch.utils.data import Dataset, DataLoader
 import torchvision
 import torchvision.transforms as transforms
@@ -74,7 +75,7 @@ class ConvNet(nn.Module):
         self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        self.fc1 = nn.Linear(16*5*5, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
 
@@ -82,7 +83,7 @@ class ConvNet(nn.Module):
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
+        x = x.view(x.size(0), -1)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
@@ -152,7 +153,7 @@ def preprocess(image):
     print(image)
     image = data_transforms(image)
     image = image.float()
-    #image = Variable(image, requires_autograd=True)
+    image = Variable(image)
     #image = image.cuda()
     image = image.unsqueeze(0) #I don't know for sure but Resnet-50 model seems to only
                                #accpets 4-D Vector Tensor so we need to squeeze another
@@ -178,18 +179,25 @@ torch.save(model, 'model.pth')
 
 cv2.namedWindow('image', cv2.WINDOW_NORMAL)
 cam = cv2.VideoCapture(0)
-fps = 0
-show_score = 0
-show_res = 'Nothing'
-sequence = 0
+frame_count = 0
+model = torch.load('model.pth', weights_only=False)
+model.eval()
+
 
 while True:
     ret, frame = cam.read()  # Capture each frame
 
-    #img = preprocess(frame)
+    if frame_count == 30:
+        frame_count = 0
+        img = preprocess(frame)
+        output = model(img)
+
+
+
     __draw_label(frame, 'Hello World', (20,20), (255,0,0))
 
     cv2.imshow('frame', frame)
+    frame_count += 1
     if cv2.waitKey(1) == 27:
         cv2.destroyWindow('frame')
         cam.release()
