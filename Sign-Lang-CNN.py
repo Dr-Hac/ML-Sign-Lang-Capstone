@@ -33,7 +33,7 @@ print(device)
 
 
 # hyper-parameters
-num_epochs = 1
+num_epochs = 10
 batch_size = 4
 learning_rate = 0.001
 
@@ -146,22 +146,27 @@ with torch.no_grad():
     for i in range(10):
         acc = 100.0 * (n_class_correct[i] / n_class_samples[i])
         print(f"accuracy of {classes[i]}: {acc:.4f}%")
+    print(f"total time: {time.time() - start_time}")
+
+    torch.save(model, 'model.pth')
 
 def preprocess(image):
-    image = PIL.Image.fromarray(image) #Webcam frames are numpy array format
+    #image = PIL.Image.fromarray(image) #Webcam frames are numpy array format
                                        #Therefore transform back to PIL image
-    print(image)
-    image = data_transforms(image)
-    image = image.float()
-    image = Variable(image)
+    image = cv2.resize(image, (32, 32), interpolation=cv2.INTER_LINEAR)
+    image = torch.from_numpy(image).float().reshape(1, 3, 32, 32)
+    print(f"{image}\n")
+    #image = data_transforms(image)
+    #image = image.float()
+    #image = Variable(image)
     #image = image.cuda()
-    image = image.unsqueeze(0) #I don't know for sure but Resnet-50 model seems to only
+    #image = image.unsqueeze(0) #I don't know for sure but Resnet-50 model seems to only
                                #accpets 4-D Vector Tensor so we need to squeeze another
     return image                            #dimension out of our 3-D vector Tensor
 
 def __draw_label(img, text, pos, bg_color):
    font_face = cv2.FONT_HERSHEY_SIMPLEX
-   scale = 0.4
+   scale = 1.5
    color = (0, 0, 0)
    thickness = cv2.FILLED
    margin = 2
@@ -173,9 +178,6 @@ def __draw_label(img, text, pos, bg_color):
    cv2.rectangle(img, pos, (end_x, end_y), bg_color, thickness)
    cv2.putText(img, text, pos, font_face, scale, color, 1, cv2.LINE_AA)
 
-print(f"total time: {time.time()-start_time}")
-
-torch.save(model, 'model.pth')
 
 cv2.namedWindow('image', cv2.WINDOW_NORMAL)
 cam = cv2.VideoCapture(0)
@@ -183,18 +185,16 @@ frame_count = 0
 model = torch.load('model.pth', weights_only=False)
 model.eval()
 
-
+predicted = 0
 while True:
     ret, frame = cam.read()  # Capture each frame
-
     if frame_count == 30:
         frame_count = 0
         img = preprocess(frame)
         output = model(img)
-
-
-
-    __draw_label(frame, 'Hello World', (20,20), (255,0,0))
+        predicted = output.data.numpy().argmax()
+        print(classes[predicted])
+    __draw_label(frame, classes[predicted], (20,35), (255,255,255))
 
     cv2.imshow('frame', frame)
     frame_count += 1
