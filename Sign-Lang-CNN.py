@@ -147,48 +147,47 @@ with torch.no_grad():
         acc = 100.0 * (n_class_correct[i] / n_class_samples[i])
         print(f"accuracy of {classes[i]}: {acc:.4f}%")
     print(f"total time: {time.time() - start_time}")
-
+    # save the model
     torch.save(model, 'model.pth')
 
 def preprocess(image):
-    #image = PIL.Image.fromarray(image) #Webcam frames are numpy array format
-                                       #Therefore transform back to PIL image
+    #resize frame to 32x32
     image = cv2.resize(image, (32, 32), interpolation=cv2.INTER_LINEAR)
+    # reshape frame to fit input prams
     image = torch.from_numpy(image).float().reshape(1, 3, 32, 32)
     print(f"{image}\n")
-    #image = data_transforms(image)
-    #image = image.float()
-    #image = Variable(image)
-    #image = image.cuda()
-    #image = image.unsqueeze(0) #I don't know for sure but Resnet-50 model seems to only
-                               #accpets 4-D Vector Tensor so we need to squeeze another
-    return image                            #dimension out of our 3-D vector Tensor
+    return image
 
 def __draw_label(img, text, pos, bg_color):
-   font_face = cv2.FONT_HERSHEY_SIMPLEX
-   scale = 1.5
-   color = (0, 0, 0)
-   thickness = cv2.FILLED
-   margin = 2
-   txt_size = cv2.getTextSize(text, font_face, scale, thickness)
+    # set font scale and color
+    font_face = cv2.FONT_HERSHEY_SIMPLEX
+    scale = 1.5
+    color = (0, 0, 0)
+    thickness = cv2.FILLED
+    margin = 2
+    txt_size = cv2.getTextSize(text, font_face, scale, thickness)
+    #place the text at the top left
+    end_x = pos[0] + txt_size[0][0] + margin
+    end_y = pos[1] - txt_size[0][1] - margin
 
-   end_x = pos[0] + txt_size[0][0] + margin
-   end_y = pos[1] - txt_size[0][1] - margin
-
-   cv2.rectangle(img, pos, (end_x, end_y), bg_color, thickness)
-   cv2.putText(img, text, pos, font_face, scale, color, 1, cv2.LINE_AA)
+    cv2.rectangle(img, pos, (end_x, end_y), bg_color, thickness)
+    cv2.putText(img, text, pos, font_face, scale, color, 1, cv2.LINE_AA)
 
 
 cv2.namedWindow('image', cv2.WINDOW_NORMAL)
 cam = cv2.VideoCapture(0)
 frame_count = 0
+# load the model in eval mode
 model = torch.load('model.pth', weights_only=False)
 model.eval()
 
 predicted = 0
+
 while True:
     ret, frame = cam.read()  # Capture each frame
-    if frame_count == 30:
+    # run model every 10 frames
+    if frame_count == 10:
+        # reset frame count
         frame_count = 0
         img = preprocess(frame)
         output = model(img)
@@ -198,11 +197,7 @@ while True:
 
     cv2.imshow('frame', frame)
     frame_count += 1
+    # exit window is esc key is pressed
     if cv2.waitKey(1) == 27:
         cv2.destroyWindow('frame')
         cam.release()
-
-
-
-
-
