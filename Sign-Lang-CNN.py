@@ -3,7 +3,7 @@ NAME: Sign-Lang-CNN.py
 DESCRIPTION: CNN algorithm to classify sign language for our capstone
 PROGRAMMER: Caidan Gray
 CREATION DATE: 3/3/2025
-LAST EDITED: 4/4/2025   (please update each time the script is changed)
+LAST EDITED: 4/22/2025   (please update each time the script is changed)
 """
 
 import torch
