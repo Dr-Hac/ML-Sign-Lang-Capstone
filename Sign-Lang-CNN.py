@@ -15,11 +15,10 @@ import torchvision
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import time
-import sklearn
-import data_loader
+# import data_loader
 import cv2
-import PIL
 
 # device config
 # sets it to run on gpu if supported
@@ -27,8 +26,6 @@ start_time = time.time()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 
-# data loader
-#Data_Loader = data_loader.Data_Loader()
 
 
 
@@ -46,25 +43,43 @@ data_transforms = torchvision.transforms.Compose([
 # dataset of PILImage images of range [0, 1]
 # transform to tensors of normalized range [-1, 1]
 transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-"""
-train_dataset = Data_Loader.train_loader()
 
-test_dataset =  Data_Loader.test_loader()
 
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+class PixelDataset(Dataset):
+    def __init__(self, csv_file, transform=None):
+        self.data = pd.read_csv(csv_file)
+        self.transform = transform
 
-test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
-"""
+    def __len__(self):
+        return len(self.data)
 
-train_dataset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+    def __getitem__(self, idx):
+        pixels = self.data.iloc[idx, 1:].values.astype(np.uint8)
+        image = pixels.reshape(28, 28)
+        label = self.data.iloc[idx, 0]
 
-test_dataset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
+        if self.transform:
+            image = self.transform(image)
+        else:
+            image = torch.from_numpy(image).float()
 
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        return image, label
 
-test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-classes = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+# Example Usage
+train_csv_file = 'archive (3)/sign_mnist_train.csv'
+test_csv_file = 'archive (3)/sign_mnist_test.csv'
+
+# Define transformations if needed
+# transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
+
+train_dataset = PixelDataset(train_csv_file)
+test_dataset = PixelDataset(test_csv_file)
+
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+
+classes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y']
 
 # conv net implementation
 class ConvNet(nn.Module):
