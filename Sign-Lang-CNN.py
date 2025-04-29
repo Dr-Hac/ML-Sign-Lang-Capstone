@@ -27,8 +27,6 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 
 
-
-
 # hyper-parameters
 num_epochs = 10
 batch_size = 4
@@ -42,7 +40,9 @@ data_transforms = torchvision.transforms.Compose([
 
 # dataset of PILImage images of range [0, 1]
 # transform to tensors of normalized range [-1, 1]
-transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+transform = transforms.Compose([transforms.ToTensor(),
+  transforms.Normalize((0.5,), (0.5,))
+])
 
 
 class PixelDataset(Dataset):
@@ -73,8 +73,8 @@ test_csv_file = 'archive (3)/sign_mnist_test.csv'
 # Define transformations if needed
 # transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
 
-train_dataset = PixelDataset(train_csv_file)
-test_dataset = PixelDataset(test_csv_file)
+train_dataset = PixelDataset(train_csv_file, transform=transform)
+test_dataset = PixelDataset(test_csv_file, transform=transform)
 
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
