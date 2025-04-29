@@ -1,9 +1,9 @@
 """
 NAME: Sign-Lang-CNN.py
 DESCRIPTION: CNN algorithm to classify sign language for our capstone
-PROGRAMMER: Caidan Gray
+PROGRAMMER: Caidan Gray and Matteo Leonard
 CREATION DATE: 3/3/2025
-LAST EDITED: 4/22/2025   (please update each time the script is changed)
+LAST EDITED: 4/29/2025   (please update each time the script is changed)
 """
 
 import torch
@@ -40,9 +40,7 @@ data_transforms = torchvision.transforms.Compose([
 
 # dataset of PILImage images of range [0, 1]
 # transform to tensors of normalized range [-1, 1]
-transform = transforms.Compose([transforms.ToTensor(),
-  transforms.Normalize((0.5,), (0.5,))
-])
+transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
 
 
 class PixelDataset(Dataset):
@@ -87,10 +85,10 @@ class ConvNet(nn.Module):
         super(ConvNet, self).__init__()
         # input channel is the colors (RGB)
         # input channel must bethe same size as previous output channel
-        self.conv1 = nn.Conv2d(3, 6, 5)
+        self.conv1 = nn.Conv2d(1, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(16*5*5, 120)
+        self.fc1 = nn.Linear(256, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
 
