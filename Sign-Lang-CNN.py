@@ -3,7 +3,7 @@ NAME: Sign-Lang-CNN.py
 DESCRIPTION: CNN algorithm to classify sign language for our capstone
 PROGRAMMER: Caidan Gray and Matteo Leonard
 CREATION DATE: 3/3/2025
-LAST EDITED: 4/29/2025   (please update each time the script is changed)
+LAST EDITED: 5/1/2025   (please update each time the script is changed)
 """
 
 import torch
@@ -28,9 +28,9 @@ print(device)
 
 
 # hyper-parameters
-num_epochs = 10
+num_epochs = 50
 batch_size = 4
-learning_rate = 0.001
+learning_rate = 0.01
 
 data_transforms = torchvision.transforms.Compose([
     torchvision.transforms.Resize(size=(224, 224)),
@@ -77,7 +77,7 @@ test_dataset = PixelDataset(test_csv_file, transform=transform)
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
-classes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y']
+classes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 
 # conv net implementation
 class ConvNet(nn.Module):
@@ -90,7 +90,7 @@ class ConvNet(nn.Module):
         self.conv2 = nn.Conv2d(6, 16, 5)
         self.fc1 = nn.Linear(256, 120)
         self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
+        self.fc3 = nn.Linear(84, 25)
 
 
     def forward(self, x):
@@ -127,7 +127,7 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
 
-        if (i + 1) % 2000 == 0:
+        if i % 2000 == 0:
             print(f"epoch {epoch+1}/{num_epochs}, step {i+1} of {n_total_steps}, loss {loss.item():.4f}")
             print(f"time: {time.time()-epoch_time}")
 print("training completed")
@@ -135,8 +135,8 @@ print("training completed")
 with torch.no_grad():
     n_correct = 0
     n_samples = 0
-    n_class_correct = [0 for i in range(10)]
-    n_class_samples = [0 for i in range(10)]
+    n_class_correct = [0 for i in range(25)]
+    n_class_samples = [0 for i in range(25)]
     for images, labels in test_loader:
         images = images.to(device)
         labels = labels.to(device)
@@ -156,9 +156,11 @@ with torch.no_grad():
     acc = 100.0 * (n_correct / n_samples)
     print(f"accuracy: {acc:.4f}%")
 
-    for i in range(10):
-        acc = 100.0 * (n_class_correct[i] / n_class_samples[i])
-        print(f"accuracy of {classes[i]}: {acc:.4f}%")
+    for i in range(25):
+        if i != 9 and i != 26:
+            print(n_class_correct[i], n_class_samples[i])
+            acc = 100.0 * (n_class_correct[i] / n_class_samples[i])
+            print(f"accuracy of {classes[i]}: {acc:.4f}%")
     print(f"total time: {time.time() - start_time}")
     # save the model
     torch.save(model, 'model.pth')
