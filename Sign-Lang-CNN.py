@@ -28,7 +28,7 @@ print(device)
 
 
 # hyper-parameters
-num_epochs = 50
+num_epochs = 1
 batch_size = 4
 learning_rate = 0.01
 
@@ -167,9 +167,9 @@ with torch.no_grad():
 
 def preprocess(image):
     #resize frame to 32x32
-    image = cv2.resize(image, (32, 32), interpolation=cv2.INTER_LINEAR)
+    image = cv2.resize(image, (28, 28), interpolation=cv2.INTER_LINEAR)
     # reshape frame to fit input prams
-    image = torch.from_numpy(image).float().reshape(1, 3, 32, 32)
+    image = torch.from_numpy(image).float().reshape(3, 1, 28, 28)
     print(f"{image}\n")
     return image
 
@@ -206,8 +206,9 @@ while True:
         frame_count = 0
         img = preprocess(frame)
         output = model(img)
-        predicted = output.data.numpy().argmax()
-        print(classes[predicted])
+        predicted = torch.argmax(output, 1)
+        predicted = predicted.tolist()[0]
+        print(predicted)
     __draw_label(frame, classes[predicted], (20,35), (255,255,255))
 
     cv2.imshow('frame', frame)
